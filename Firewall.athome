@@ -1,0 +1,4 @@
+#!/bin/sh
+IPFW=/sbin/ipfw
+$IPFW -f flush
+${IPFW} -f add 65535 allow ip from any to any

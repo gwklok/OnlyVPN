@@ -1,0 +1,26 @@
+#!/bin/sh
+
+IPFW=/sbin/ipfw
+
+${IPFW} -f flush
+#loopback device
+${IPFW} -f add 01000 allow ip from any to any via lo\*
+#openvpn
+${IPFW} -f add 01001 allow ip from any to any dst-port 1194 out
+${IPFW} -f add 01002 allow ip from any to any src-port 1194 in
+# dhcp
+${IPFW} -f add 01003 allow udp from any 67 to any dst-port 68 in
+${IPFW} -f add 01004 allow udp from any 68 to any dst-port 67 out
+# dns, if you are super concerned about privacy this isnt a good
+# rule because a lot of apps will attempt to make connections
+# on interface up so they will perform DNS lookups revealing
+# where you connect to (I assume you also tunnel DNS)
+# you could hardcore the ipaddress of your openvpn server
+${IPFW} -f add 01005 allow ip from any to any dst-port 53 out
+${IPFW} -f add 01006 allow ip from any to any src-port 53 in
+# let everything on the tun used by the vpn in
+${IPFW} -f add 10001 allow ip from any to any via tun0
+${IPFW} -f add 10001 allow ip from any to any via tap0
+#block everything
+${IPFW} -f add deny in
+${IPFW} -f add deny out
